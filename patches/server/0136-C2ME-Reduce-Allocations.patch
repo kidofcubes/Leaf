@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Taiyou06 <kaandindar21@gmail.com>
+Date: Thu, 7 Nov 2024 19:45:31 +0100
+Subject: [PATCH] C2ME-Reduce-Allocations
+
+
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java b/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java
+index 506b2afd099c9b7e9ac3f6f2fcea8e523fae396b..c97a29bab6df3e97a5eef6881199ba5cf447d9ab 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java
+@@ -69,7 +69,7 @@ public class OreFeature extends Feature<OreConfiguration> {
+         int verticalSize
+     ) {
+         int i = 0;
+-        BitSet bitSet = new BitSet(horizontalSize * verticalSize * horizontalSize);
++        BitSet bitSet = org.dreeam.leaf.util.cache.getCachedOrNewBits.getCachedOrNewBitSet(horizontalSize * verticalSize * horizontalSize); // DivineMC - C2ME: reduce_allocs - Leaf
+         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
+         int j = config.size;
+         double[] ds = new double[j * 4];
+diff --git a/src/main/java/org/dreeam/leaf/util/cache/getCachedOrNewBits.java b/src/main/java/org/dreeam/leaf/util/cache/getCachedOrNewBits.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d25dd9a793a1dbc4dc06451985d49c151271a2a6
+--- /dev/null
++++ b/src/main/java/org/dreeam/leaf/util/cache/getCachedOrNewBits.java
+@@ -0,0 +1,20 @@
++package org.dreeam.leaf.util.cache;
++
++import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
++
++import java.util.BitSet;
++import java.util.function.IntFunction;
++
++public class getCachedOrNewBits {
++    private static final IntFunction<BitSet> bitSetConstructor = BitSet::new;
++
++    public static ThreadLocal<Int2ObjectOpenHashMap<BitSet>> BITSETS = ThreadLocal.withInitial(Int2ObjectOpenHashMap::new);
++
++    private getCachedOrNewBits() {}
++
++    public static BitSet getCachedOrNewBitSet(int bits) {
++        final BitSet bitSet = BITSETS.get().computeIfAbsent(bits, bitSetConstructor);
++        bitSet.clear();
++        return bitSet;
++    }
++}
+\ No newline at end of file
