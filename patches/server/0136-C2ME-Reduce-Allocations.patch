@@ -5,7 +5,7 @@ Subject: [PATCH] C2ME-Reduce-Allocations
 
 
 diff --git a/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java b/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java
-index 506b2afd099c9b7e9ac3f6f2fcea8e523fae396b..c97a29bab6df3e97a5eef6881199ba5cf447d9ab 100644
+index 506b2afd099c9b7e9ac3f6f2fcea8e523fae396b..b6a5f3e8105f0fe210ee1d33500fba45d0bb9462 100644
 --- a/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java
 +++ b/src/main/java/net/minecraft/world/level/levelgen/feature/OreFeature.java
 @@ -69,7 +69,7 @@ public class OreFeature extends Feature<OreConfiguration> {
@@ -13,15 +13,15 @@ index 506b2afd099c9b7e9ac3f6f2fcea8e523fae396b..c97a29bab6df3e97a5eef6881199ba5c
      ) {
          int i = 0;
 -        BitSet bitSet = new BitSet(horizontalSize * verticalSize * horizontalSize);
-+        BitSet bitSet = org.dreeam.leaf.util.cache.getCachedOrNewBits.getCachedOrNewBitSet(horizontalSize * verticalSize * horizontalSize); // DivineMC - C2ME: reduce_allocs - Leaf
++        BitSet bitSet = org.dreeam.leaf.util.cache.CachedOrNewBitsGetter.getCachedOrNewBitSet(horizontalSize * verticalSize * horizontalSize); // DivineMC - C2ME: reduce_allocs - Leaf
          BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
          int j = config.size;
          double[] ds = new double[j * 4];
-diff --git a/src/main/java/org/dreeam/leaf/util/cache/getCachedOrNewBits.java b/src/main/java/org/dreeam/leaf/util/cache/getCachedOrNewBits.java
+diff --git a/src/main/java/org/dreeam/leaf/util/cache/CachedOrNewBitsGetter.java b/src/main/java/org/dreeam/leaf/util/cache/CachedOrNewBitsGetter.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d25dd9a793a1dbc4dc06451985d49c151271a2a6
+index 0000000000000000000000000000000000000000..e039cc46a2078bb0cd01b41ddc26437d8be56c64
 --- /dev/null
-+++ b/src/main/java/org/dreeam/leaf/util/cache/getCachedOrNewBits.java
++++ b/src/main/java/org/dreeam/leaf/util/cache/CachedOrNewBitsGetter.java
 @@ -0,0 +1,20 @@
 +package org.dreeam.leaf.util.cache;
 +
@@ -30,12 +30,12 @@ index 0000000000000000000000000000000000000000..d25dd9a793a1dbc4dc06451985d49c15
 +import java.util.BitSet;
 +import java.util.function.IntFunction;
 +
-+public class getCachedOrNewBits {
++public class CachedOrNewBitsGetter {
 +    private static final IntFunction<BitSet> bitSetConstructor = BitSet::new;
 +
 +    public static ThreadLocal<Int2ObjectOpenHashMap<BitSet>> BITSETS = ThreadLocal.withInitial(Int2ObjectOpenHashMap::new);
 +
-+    private getCachedOrNewBits() {}
++    private CachedOrNewBitsGetter() {}
 +
 +    public static BitSet getCachedOrNewBitSet(int bits) {
 +        final BitSet bitSet = BITSETS.get().computeIfAbsent(bits, bitSetConstructor);
