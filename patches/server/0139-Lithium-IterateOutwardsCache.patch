@@ -5,37 +5,24 @@ Subject: [PATCH] Lithium-IterateOutwardsCache
 
 
 diff --git a/src/main/java/net/minecraft/core/BlockPos.java b/src/main/java/net/minecraft/core/BlockPos.java
-index a64e5997b94cc8173f0512d1e282355f14f098ec..c3e2ce43b93e157be1490ba362d54ff252488b24 100644
+index a64e5997b94cc8173f0512d1e282355f14f098ec..fa50105b9e8318d4064cdfad8b812fce40c90a8c 100644
 --- a/src/main/java/net/minecraft/core/BlockPos.java
 +++ b/src/main/java/net/minecraft/core/BlockPos.java
-@@ -28,6 +28,12 @@ import net.minecraft.world.phys.Vec3;
- import org.apache.commons.lang3.Validate;
- import org.apache.commons.lang3.tuple.Pair;
- import org.slf4j.Logger;
-+// JettPack start
-+import it.unimi.dsi.fastutil.longs.LongList;
-+import org.dreeam.leaf.cache.IterateOutwardsCache;
-+import org.dreeam.leaf.cache.LongList2BlockPosMutableIterable;
-+import static org.dreeam.leaf.cache.IterateOutwardsCache.POS_ZERO;
-+// JettPack end
- 
- @Immutable
- public class BlockPos extends Vec3i {
-@@ -343,7 +349,19 @@ public class BlockPos extends Vec3i {
+@@ -343,7 +343,19 @@ public class BlockPos extends Vec3i {
              };
      }
  
 +    // JettPack start - lithium: cached iterate outwards
-+    private static final IterateOutwardsCache ITERATE_OUTWARDS_CACHE = new IterateOutwardsCache(50);
-+    private static final LongList HOGLIN_PIGLIN_CACHE = ITERATE_OUTWARDS_CACHE.getOrCompute(8, 4, 8);
++    private static final org.dreeam.leaf.cache.IterateOutwardsCache ITERATE_OUTWARDS_CACHE = new org.dreeam.leaf.cache.IterateOutwardsCache(50);
++    private static final it.unimi.dsi.fastutil.longs.LongList HOGLIN_PIGLIN_CACHE = ITERATE_OUTWARDS_CACHE.getOrCompute(8, 4, 8);
 +    // JettPack end
 +
 +
      public static Iterable<BlockPos> withinManhattan(BlockPos center, int rangeX, int rangeY, int rangeZ) {
 +        // JettPack start - lithium: cached iterate outwards
-+        if (center != POS_ZERO) {
-+            final LongList positions = rangeX == 8 && rangeY == 4 && rangeZ == 8 ? HOGLIN_PIGLIN_CACHE : ITERATE_OUTWARDS_CACHE.getOrCompute(rangeX, rangeY, rangeZ);
-+            return new LongList2BlockPosMutableIterable(center, positions);
++        if (center != org.dreeam.leaf.cache.IterateOutwardsCache.POS_ZERO) {
++            final it.unimi.dsi.fastutil.longs.LongList positions = rangeX == 8 && rangeY == 4 && rangeZ == 8 ? HOGLIN_PIGLIN_CACHE : ITERATE_OUTWARDS_CACHE.getOrCompute(rangeX, rangeY, rangeZ);
++            return new org.dreeam.leaf.cache.LongList2BlockPosMutableIterable(center, positions);
 +        }
 +        // JettPack end
          int i = rangeX + rangeY + rangeZ;
