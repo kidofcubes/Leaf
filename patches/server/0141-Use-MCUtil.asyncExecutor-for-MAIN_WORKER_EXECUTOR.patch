@@ -5,36 +5,23 @@ Subject: [PATCH] Use-MCUtil.asyncExecutor-for-MAIN_WORKER_EXECUTOR-
 
 
 diff --git a/src/main/java/net/minecraft/Util.java b/src/main/java/net/minecraft/Util.java
-index 815253d03b85a7a476c1efdeca9496fd64afc137..d622b91c1c14393d89fd7e3ef0c5b62ed3c727e7 100644
+index 815253d03b85a7a476c1efdeca9496fd64afc137..dc0ea2e4f8ea41c96633a59243e0d8862ba28ec9 100644
 --- a/src/main/java/net/minecraft/Util.java
 +++ b/src/main/java/net/minecraft/Util.java
-@@ -83,6 +83,12 @@ import net.minecraft.util.TimeSource;
- import net.minecraft.util.datafix.DataFixers;
- import net.minecraft.world.level.block.state.properties.Property;
- import org.slf4j.Logger;
-+// JettPack start
-+import java.util.concurrent.AbstractExecutorService;
-+import org.dreeam.leaf.serverworker.ServerWorkerWrapper;
-+import io.papermc.paper.util.MCUtil;
-+import java.util.Collections;
-+// JettPack end
- 
- public class Util {
-     static final Logger LOGGER = LogUtils.getLogger();
-@@ -179,7 +185,46 @@ public class Util {
+@@ -179,7 +179,46 @@ public class Util {
          if (i <= 0) {
              executorService = MoreExecutors.newDirectExecutorService();
          } else {
 -            executorService = new java.util.concurrent.ThreadPoolExecutor(i, i,0L, TimeUnit.MILLISECONDS, new java.util.concurrent.LinkedBlockingQueue<>(), target -> new io.papermc.paper.util.ServerWorkerThread(target, s, priorityModifier));
 +            //executorService = new java.util.concurrent.ThreadPoolExecutor(i, i,0L, TimeUnit.MILLISECONDS, new java.util.concurrent.LinkedBlockingQueue<>(), target -> new io.papermc.paper.util.ServerWorkerThread(target, s, priorityModifier));
 +            // JettPack start
-+            executorService = Integer.getInteger("Paper.WorkerThreadCount", i) <= 0 ? MoreExecutors.newDirectExecutorService() : new AbstractExecutorService(){
++            executorService = Integer.getInteger("Paper.WorkerThreadCount", i) <= 0 ? MoreExecutors.newDirectExecutorService() : new java.util.concurrent.AbstractExecutorService(){
 +                private volatile boolean shutdown = false;
 +
 +                @Override
 +                public final List<Runnable> shutdownNow() {
 +                    this.shutdown = true;
-+                    return Collections.emptyList();
++                    return java.util.Collections.emptyList();
 +                }
 +
 +                @Override
@@ -62,7 +49,7 @@ index 815253d03b85a7a476c1efdeca9496fd64afc137..d622b91c1c14393d89fd7e3ef0c5b62e
 +
 +                @Override
 +                public final void execute(Runnable runnable) {
-+                    MCUtil.asyncExecutor.execute(new ServerWorkerWrapper(runnable));
++                    io.papermc.paper.util.MCUtil.asyncExecutor.execute(new org.dreeam.leaf.serverworker.ServerWorkerWrapper(runnable));
 +                }
 +            };
 +            // JettPack end
